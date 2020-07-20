@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { lazy } from 'react';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 
 import ListUserOnlineComponent from './components/ListUserOnlineComponent';
@@ -31,6 +31,7 @@ function RoutersCommponent() {
     <BrowserRouter>
       <TopBarAppComponent />
       <Switch>
+        <Route exact path="/" component={() => <Redirect to="/user" />} />
         <Route exact path="/admin" component={withListUsers(AdminPageComponent)} />
         <Route exact path="/user" component={withListUsers(UsersPageComponent)} />
         <Route exact component={PageNotFound} />

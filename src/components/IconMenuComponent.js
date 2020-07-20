@@ -21,8 +21,8 @@ const useStyles = makeStyles({
 });
 
 function IconMenuComponent({ clientID }) {
-  const dispatch = useDispatch();
   const source = useSelector(state => state.userList.filter(member => member.clientId !== clientID));
+  const dispatch = useDispatch();
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
 

@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import {
   Card,
   CardHeader,
@@ -11,7 +11,8 @@ import {
   ListItem,
   CardActions,
   Box,
-  Typography
+  Typography,
+  RootRef
 } from '@material-ui/core';
 import { Close } from '@material-ui/icons';
 import clsx from 'clsx';
@@ -67,18 +68,32 @@ const CloseButtonIcon = styled(IconButton)({
   padding: 0
 });
 
-function PrivateListMessagesComponent({ channel, me }) {
+function PrivateListMessages({ channel, me }, contentRef) {
   const [historyMessages, setHistoryMessages] = useState([]);
   const classes = useStyles();
+
+  const scrollToBottom = useCallback(() => {
+    if (contentRef.current) {
+      const { scrollHeight } = contentRef.current;
+      const height = contentRef.current.clientHeight;
+      const maxScrollTop = scrollHeight - height;
+      contentRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    }
+  }, [contentRef]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [historyMessages, scrollToBottom]);
 
   useEffect(() => {
     if (channel) {
       channel.attach();
       // channel.once('attached', () => {
       channel.history((_, page) => {
-        setHistoryMessages(page.items);
+        const sortedMesages = page.items.sort((a, b) => a.timestamp - b.timestamp);
+        setHistoryMessages(sortedMesages);
         channel.subscribe('chat', message => {
-          setHistoryMessages(prevList => [message, ...prevList]);
+          setHistoryMessages(prevList => [...prevList, message]);
         });
       });
       // });
@@ -110,10 +125,13 @@ function PrivateListMessagesComponent({ channel, me }) {
   );
 }
 
+const PrivateListMessagesComponent = forwardRef(PrivateListMessages);
+
 function PrivateChateMessageComponent({ onClose, ablyIntance, room }) {
   const channelName = getCommonRoomName(ablyIntance?.auth.clientId, room?.clientId);
   const channel = ablyIntance?.channels?.get(channelName) || null;
   const classes = useStyles();
+  const contentRef = useRef();
 
   return (
     <>
@@ -132,9 +150,11 @@ function PrivateChateMessageComponent({ onClose, ablyIntance, room }) {
             }
           />
           <Divider />
-          <CardContent className={classes.listRoot}>
-            <PrivateListMessagesComponent channel={channel} me={ablyIntance.auth.clientId} />
-          </CardContent>
+          <RootRef rootRef={contentRef}>
+            <CardContent className={classes.listRoot}>
+              <PrivateListMessagesComponent ref={contentRef} channel={channel} me={ablyIntance.auth.clientId} />
+            </CardContent>
+          </RootRef>
           <CardActions>
             <InputSendComponent ablyIntance={ablyIntance} channelName={channelName} event="chat" />
           </CardActions>

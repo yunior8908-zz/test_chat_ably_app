@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FormControl, TextField, Button, makeStyles } from '@material-ui/core';
+import { FormControl, TextField, Button, makeStyles, Grid } from '@material-ui/core';
 import { useLocation, useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Realtime } from 'ably';
@@ -44,6 +44,7 @@ function UsersPageComponent() {
   };
 
   const handleClick = () => {
+    setName('');
     urlParams.set('name', name);
     history.push({
       pathname,
@@ -57,19 +58,25 @@ function UsersPageComponent() {
         <PanelChatComponent handleClose={handleClose} />
       ) : (
         <div className={classes.root}>
-          <FormControl className={classes.FormControl}>
-            <TextField
-              size="medium"
-              variant="standard"
-              label="Name"
-              placeholder="user name"
-              name={name}
-              onChange={handleChange}
-            />
-            <Button color="primary" variant="contained" onClick={handleClick}>
-              register
-            </Button>
-          </FormControl>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <FormControl className={classes.FormControl}>
+                <TextField
+                  size="medium"
+                  variant="standard"
+                  label="Name"
+                  placeholder="user name"
+                  name={name}
+                  onChange={handleChange}
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <Button fullWidth color="primary" variant="contained" onClick={handleClick}>
+                register
+              </Button>
+            </Grid>
+          </Grid>
         </div>
       )}
     </>
