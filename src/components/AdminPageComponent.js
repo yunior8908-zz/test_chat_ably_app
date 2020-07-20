@@ -29,10 +29,10 @@ function AdminPageComponent() {
   }, [dispatch]);
 
   useEffect(() => {
-    ably.connection.on('connected', () => {
-      const generalChannel = ably.channels.get(channelName);
-      generalChannel.presence.enterClient(ably.clientId);
-    });
+    // ably.connection.on('connected', () => {
+    const generalChannel = ably.channels.get(channelName);
+    generalChannel.presence.enterClient(ably.clientId);
+    // });
 
     return () => {
       ably.close();

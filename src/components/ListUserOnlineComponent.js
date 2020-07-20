@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Grid, useTheme, useMediaQuery } from '@material-ui/core';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   setPrivateRoomAction,
   deleteMemberAction,
@@ -12,6 +12,7 @@ import UserListLargeComponent from './UserListLargeComponent';
 function SwitchListUserResponsive({ userList, handleClick }) {
   const theme = useTheme();
   const match = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <>
       {!match && (
@@ -24,13 +25,13 @@ function SwitchListUserResponsive({ userList, handleClick }) {
 }
 
 function ListUserOnlineComponent() {
-  const dispatch = useDispatch();
   const ablyIntance = useSelector(state => state.ablyIntance);
   const clientID = ablyIntance?.auth.clientId;
   const userList = useSelector(state => state.userList.filter(member => member.clientId !== clientID));
-  const generalChannel = ablyIntance?.channels.get('general');
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    const generalChannel = ablyIntance?.channels.get('general');
     if (generalChannel) {
       generalChannel.presence.get((err, members) => {
         if (err) {
@@ -41,17 +42,17 @@ function ListUserOnlineComponent() {
             dispatch(setMemberAction(element));
           }
         });
+      });
 
-        generalChannel.presence.subscribe(member => {
-          if (member.action === 'leave') {
-            dispatch(deleteMemberAction(member));
-          } else if (clientID !== member.clientId) {
-            dispatch(setMemberAction(member));
-          }
-        });
+      generalChannel.presence.subscribe(member => {
+        if (member.action === 'leave') {
+          dispatch(deleteMemberAction(member));
+        } else if (clientID !== member.clientId) {
+          dispatch(setMemberAction(member));
+        }
       });
     }
-  }, [generalChannel, dispatch, clientID]);
+  }, [ablyIntance, clientID, dispatch]);
 
   const handleClick = user => {
     dispatch(setPrivateRoomAction(user));

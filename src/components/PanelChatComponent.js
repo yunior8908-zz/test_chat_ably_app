@@ -1,21 +1,30 @@
 import React, { useEffect, memo } from 'react';
 import { Grid, Typography, Divider, Box } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PrivateChateMessageComponent from './PrivateChateMessageComponent';
 import ListNotificatonsComponent from './ListNotificationsComponent';
+import { setAblyIntanceAction } from '../redux/actions/ablyAction';
 
 function PanelChatComponent({ handleClose }) {
+  const dispatch = useDispatch();
   const ablyIntance = useSelector(state => state.ablyIntance);
   const privateChatRoom = useSelector(state => state.privateChatRoom);
 
   useEffect(() => {
+    let generalChannel;
     if (ablyIntance) {
-      const generalChannel = ablyIntance?.channels.get('general');
-      ablyIntance.connection.on('connected', () => {
-        generalChannel.presence.enterClient(ablyIntance?.auth.clientId);
-      });
+      generalChannel = ablyIntance?.channels.get('general');
+      generalChannel.presence.enterClient(ablyIntance?.auth.clientId);
     }
-  }, [ablyIntance]);
+
+    return () => {
+      if (ablyIntance && generalChannel) {
+        generalChannel.presence.leave(ablyIntance?.auth.clientId);
+        ablyIntance.close();
+        dispatch(setAblyIntanceAction(null));
+      }
+    };
+  }, [ablyIntance, dispatch]);
 
   return (
     <Grid
@@ -24,7 +33,14 @@ function PanelChatComponent({ handleClose }) {
         height: '100%'
       }}
     >
-      <Grid item xs={12} sm={7}>
+      <Grid
+        item
+        xs={12}
+        sm={7}
+        style={{
+          height: '100%'
+        }}
+      >
         <PrivateChateMessageComponent ablyIntance={ablyIntance} room={privateChatRoom} onClose={handleClose} />
       </Grid>
       <Grid
